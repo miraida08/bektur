@@ -1,10 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from phonenumber_field.modelfields import PhoneNumberField
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 class UserProfile(AbstractUser):
-    age = models.PositiveSmallIntegerField(default=0, null=True, blank=True)
+    age = models.PositiveSmallIntegerField(default=0, null=True, blank=True,
+                                           validators=[MinValueValidator(15), MaxValueValidator(110)])
     date_registered = models.DateField(auto_now_add=True, null=True, blank=True)
-    phone_number = models.IntegerField(null=True, blank=True)
+    phone_number = PhoneNumberField(null=True, blank=True, region='KG')
     STATUS_CHOICES = (
         ('gold', 'Gold'),
         ('silver', 'Silver'),
@@ -77,8 +80,17 @@ class Cart(models.Model):
         return f'{self.user}'
 
     def get_total_price(self):
-        return sum(item.get_total_price() for item in self.items.all())
+        total_price =  sum(item.get_total_price() for item in self.items.all())
+        discount = 0
 
+        if self.user.status == 'gold':
+            discount = 0.75
+        if self.user.status == 'silver':
+            discount = 0.50
+        if self.user.status == 'bronze':
+            discount = 0.25
+        final_price = total_price * (1 - discount)
+        return final_price
 
 class CarItem(models.Model):
     cart = models.ForeignKey(Cart, related_name='items', on_delete=models.CASCADE)

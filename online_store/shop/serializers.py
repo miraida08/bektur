@@ -120,12 +120,12 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
 class CartItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
-    product_id = serializers.PrimaryKeyRelatedField(queryset=product.objects.all(),
+    product_id = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all(),
                                                     write_only=True, source='product')
 
     class Meta:
         model = CarItem
-        fields = ['id', 'product', 'product_id' 'quantity', 'get_total_price']
+        fields = ['id', 'product', 'product_id', 'quantity', 'get_total_price']
 
 class CartSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
@@ -135,5 +135,5 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = ['id', 'user', 'items', 'total_price']
 
-        def get_total_price(self, obj):
-            return obj.get_total_price()
+    def get_total_price(self, obj):
+        return obj.get_total_price()
